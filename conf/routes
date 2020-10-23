@@ -5,7 +5,7 @@
 
 # RESTful apis routes
 GET     /api/adverts                    controllers.HomeController.getAll
-GET     /api/adverts/:id                controllers.HomeController.read(id)
+GET     /api/adverts/:id                controllers.HomeController.readAdv(id)
 PUT     /api/adverts/:id                controllers.HomeController.update(id)
 DELETE  /api/adverts/:id                controllers.HomeController.delete(id)
 POST    /api/adverts                    controllers.HomeController.create
