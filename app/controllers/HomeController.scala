@@ -8,7 +8,7 @@ import play.api.libs.json._
 import play.api.libs.json.Writes
 import play.api.libs.json.Reads
 import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
-import services.{Car, Fuel}
+import services.{Car, Fuel, AdvertsManagement}
 
 
 
@@ -19,15 +19,14 @@ import services.{Car, Fuel}
 @Singleton
 class HomeController @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
 
-  private val listOfAdverts = collection.mutable.Map(0 -> Car("0", "Audi", "gasoline", 1500, true, None, None))
-
+  var adverts = new AdvertsManagement
 
   def getAll: Action[AnyContent] = Action {
-    Ok(Json.toJson(listOfAdverts.values))
+    Ok(Json.toJson(adverts.getListOfAdverts))
   }
 
   def readAdv(id: String): Action[AnyContent] = Action {
-    Ok(Json.toJson(listOfAdverts(0)))
+    Ok(Json.toJson(adverts.getAdvertByID(id)))
   }
 
   def update(id: String): Action[AnyContent] = Action {
