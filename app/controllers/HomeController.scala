@@ -9,6 +9,7 @@ import play.api.libs.json.Writes
 import play.api.libs.json.Reads
 import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents, Request, request}
 import services.{AdvertsManagement, Car, Fuel}
+import services.AdvertException
 
 
 
@@ -50,7 +51,10 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
           }
           catch {
             case ex: NoSuchElementException => {
-              Status(404)("Resource not found for the requested ID")
+              Status(404)("Impossible to Update: Resource not found for the requested ID")
+            }
+            case ex1: AdvertException => {
+              Status(404)("Impossible to update: A new car does not have mileage and date of registration. A used car does.")
             }
           }
         }
@@ -61,7 +65,15 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
   }
 
   def delete(id: String): Action[AnyContent] = Action {
-    Ok("Json.toJson(listOfAdverts.values)")
+    try{
+      adverts.deleteAdvert(id)
+      Ok("Correctly deleted!")
+    }
+    catch{
+      case ex: NoSuchElementException => {
+        Status(404)("Impossible to Delete: Resource not found for the requested ID")
+      }
+    }
   }
 
   def create: Action[AnyContent] = Action {

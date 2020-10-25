@@ -38,15 +38,24 @@ case class AdvertsManagement() {
     if(!listOfAdverts.contains(id))
       throw new NoSuchElementException
     else {
-      listOfAdverts.update(id, Car(id, title, fuel, price, isNew, mileage, first_registration))
+      if (((isNew && mileage.isDefined) || (isNew && first_registration.isDefined)) ||
+        ((!isNew && mileage.isEmpty) || (!isNew && first_registration.isEmpty)))
+        throw AdvertException("A new car does not have mileage and date of registration. A used car has them.")
+      else
+        listOfAdverts.update(id, Car(id, title, fuel, price, isNew, mileage, first_registration))
     }
   }
 
+  def deleteAdvert(id: String): Unit = {
+    if (!listOfAdverts.contains(id))
+      throw new NoSuchElementException
+    else {
+      listOfAdverts.remove(id)
+    }
+  }
 }
 
 object  AdvertsManagement {
-
-
 
 }
 
