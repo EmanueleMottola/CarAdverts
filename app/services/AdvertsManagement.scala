@@ -3,13 +3,14 @@ package services
 import java.sql.Date
 
 import javax.inject.Singleton
-import play.api.libs.json.Reads.DefaultSqlDateReads
 import play.api.libs.json.JsValue
+import play.api.libs.json.Reads.DefaultSqlDateReads
 
 
 @Singleton
 case class AdvertsManagement() {
   private val listOfAdverts = collection.mutable.Map[String, Car]("0" -> Car("0", "Audi", "gasoline", 1500, isNew = true, None, None))
+  private val mongoutility = new MongoUtility
 
   def getListOfAdverts(listOfParam: Map[String, String]): Iterable[Car] = {
 
@@ -22,7 +23,9 @@ case class AdvertsManagement() {
     }
     else {
       listOfParam("sortBy") match {
-        case "id" => { p = listOfAdverts.toSeq.sortBy(_._2.id) }
+        //case "id" => { p = listOfAdverts.toSeq.sortBy(_._2.id) }
+        case "id" => { p = mongoutility.getEntireCollectionSorted("id") }
+
         case "title" => {  p = listOfAdverts.toSeq.sortBy(_._2.title)}
         case "fuel" => { p = listOfAdverts.toSeq.sortBy(_._2.fuel)}
         case "price" => { p = listOfAdverts.toSeq.sortBy(_._2.price)}
