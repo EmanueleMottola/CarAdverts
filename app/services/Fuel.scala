@@ -1,9 +1,11 @@
 package services
 
 object Fuel extends Enumeration{
-  type Fuel = Value
+  type FuelType = Value
 
-  val gasoline = "gasoline"
-  val diesel = "diesel"
+  val gasoline: Fuel.Value = Value("gasoline")
+  val diesel: Fuel.Value = Value("diesel")
+
+  def isFuelType(s: String): Boolean = values.exists(s == _.toString)
 
 }

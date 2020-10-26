@@ -2,14 +2,12 @@ package controllers
 
 import javax.inject._
 import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
-import services.{Car, Fuel}
+import services.{AdvertException, AdvertsManagement, Car, DuplicateKeyException, Fuel}
 import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json._
 import play.api.libs.json.Writes
 import play.api.libs.json.Reads
 import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents, Request, request}
-import services.{AdvertsManagement, Car, Fuel}
-import services.AdvertException
 
 
 
@@ -22,8 +20,27 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
 
   var adverts = new AdvertsManagement
 
+  def untrail(path: String) = Action {
+    MovedPermanently("/" + path)
+  }
+
   def getAll: Action[AnyContent] = Action {
-    Ok(Json.toJson(adverts.getListOfAdverts))
+
+    request: Request[AnyContent] =>
+      val parameters: Map[String, Seq[String]] = request.queryString
+      val flatMap: Map[String, String] = parameters.map { case (k, v) => k -> v.mkString } //flat, only one String
+
+    try{
+      Ok(Json.toJson(adverts.getListOfAdverts(flatMap)))
+    }
+    catch {
+      case ex: IllegalArgumentException => {
+        Status(404)("Too many query parameters. Required only \"sortBy\" parameter.")
+      }
+      case ex1: NoSuchFieldException => {
+        Status(404)("The field required for sorting is wrong.")
+      }
+    }
   }
 
   def readAdv(id: String): Action[AnyContent] = Action {
@@ -51,10 +68,10 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
           }
           catch {
             case ex: NoSuchElementException => {
-              Status(404)("Impossible to Update: Resource not found for the requested ID")
+              Status(404)("Impossible to update: Resource not found for the requested ID")
             }
             case ex1: AdvertException => {
-              Status(404)("Impossible to update: A new car does not have mileage and date of registration. A used car does.")
+              Status(404)("Impossible to update: Error in advert content.")
             }
           }
         }
@@ -77,7 +94,29 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
   }
 
   def create: Action[AnyContent] = Action {
-    Ok("Json.toJson(listOfAdverts.values)")
+    request: Request[AnyContent] =>
+      val body: AnyContent = request.body
+      val jsonBody: Option[JsValue] = body.asJson
+
+      jsonBody.map{
+        json => {
+          try{
+            adverts.createAdvert(json)
+            Ok("Advert created correctly!")
+          }
+          catch {
+            case ex: DuplicateKeyException => {
+              Status(404)("Impossible to create: Resource with same ID already there.")
+            }
+            case ex1: AdvertException => {
+              Status(404)("Impossible to create: Error in advert content.")
+            }
+          }
+        }
+      }
+        .getOrElse{
+          BadRequest("Expecting application/json request body")
+        }
   }
 
 }

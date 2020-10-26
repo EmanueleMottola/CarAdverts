@@ -2,6 +2,8 @@
 # Routes
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
+# to handle trailing /
+GET     /*path/                         controllers.HomeController.untrail(path: String)
 
 # RESTful apis routes
 GET     /api/adverts                    controllers.HomeController.getAll

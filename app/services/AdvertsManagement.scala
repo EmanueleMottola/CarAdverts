@@ -3,19 +3,40 @@ package services
 import java.sql.Date
 
 import javax.inject.Singleton
-import play.api.libs.json.Format.GenericFormat
-import play.api.libs.json.OFormat.oFormatFromReadsAndOWrites
 import play.api.libs.json.Reads.DefaultSqlDateReads
-import play.api.libs.json.Writes.DefaultLocalDateWrites
-import play.api.libs.json.{JsPath, JsValue, Json, Reads, Writes}
-import services.{Car, Fuel}
+import play.api.libs.json.JsValue
+
 
 @Singleton
 case class AdvertsManagement() {
   private val listOfAdverts = collection.mutable.Map[String, Car]("0" -> Car("0", "Audi", "gasoline", 1500, isNew = true, None, None))
 
-  def getListOfAdverts: Iterable[Car] = {
-    listOfAdverts.values
+  def getListOfAdverts(listOfParam: Map[String, String]): Iterable[Car] = {
+
+    var p = Seq[(String, Car)]()
+    if(listOfParam.size > 1){
+      throw new IllegalArgumentException
+    }
+    else if (listOfParam.size == 1 && !listOfParam.keySet.contains("sortBy")) {
+      throw new IllegalArgumentException
+    }
+    else {
+      listOfParam("sortBy") match {
+        case "id" => { p = listOfAdverts.toSeq.sortBy(_._2.id) }
+        case "title" => {  p = listOfAdverts.toSeq.sortBy(_._2.title)}
+        case "fuel" => { p = listOfAdverts.toSeq.sortBy(_._2.fuel)}
+        case "price" => { p = listOfAdverts.toSeq.sortBy(_._2.price)}
+        case "isNew" => { p = listOfAdverts.toSeq.sortBy(_._2.isNew)}
+        case "mileage" => { p = listOfAdverts.toSeq.sortBy(_._2.mileage)}
+        //cannot solve this implicit
+        //case "first_registration" => { p = listOfAdverts.toSeq.sortBy(_._2.first_registration):_*}
+        case _ => {throw new NoSuchFieldException()}
+      }
+      var m = Map[String, Car]()
+      for(elem <- p)
+        m += elem
+      m.values
+    }
   }
 
   def getAdvertByID(id: String): Car = {
@@ -37,21 +58,74 @@ case class AdvertsManagement() {
 
     if(!listOfAdverts.contains(id))
       throw new NoSuchElementException
+
     else {
+      if(!Fuel.isFuelType(fuel)){
+
+        throw AdvertException("Wrong fuel type.")
+
+      }
+
       if (((isNew && mileage.isDefined) || (isNew && first_registration.isDefined)) ||
         ((!isNew && mileage.isEmpty) || (!isNew && first_registration.isEmpty)))
+
         throw AdvertException("A new car does not have mileage and date of registration. A used car has them.")
+
       else
         listOfAdverts.update(id, Car(id, title, fuel, price, isNew, mileage, first_registration))
     }
   }
 
+
+
   def deleteAdvert(id: String): Unit = {
+
     if (!listOfAdverts.contains(id))
+
       throw new NoSuchElementException
+
     else {
+
       listOfAdverts.remove(id)
     }
+  }
+
+
+
+  def createAdvert(json: JsValue): Unit = {
+
+    val id = (json \ "id").as[String]
+    val title = (json \ "title").as[String]
+    val fuel = (json \ "fuel").as[String]
+    val price = (json \ "price").as[Int]
+    val isNew = (json \ "isNew").as[Boolean]
+    val mileage = (json \ "mileage").asOpt[Int]
+    val first_registration = (json \ "first_registration").asOpt[Date]
+
+
+    if(listOfAdverts.contains(id))
+
+      throw DuplicateKeyException("Duplicate key")
+
+    else {
+
+      if(!Fuel.isFuelType(fuel)){
+
+          throw AdvertException("Wrong fuel type.")
+
+        }
+
+      if (((isNew && mileage.isDefined) || (isNew && first_registration.isDefined)) ||
+        ((!isNew && mileage.isEmpty) || (!isNew && first_registration.isEmpty)))
+
+        throw AdvertException("A new car does not have mileage and date of registration. A used car has them.")
+
+      else
+
+        listOfAdverts.put(id, Car(id, title, fuel, price, isNew, mileage, first_registration))
+
+    }
+
   }
 }
 
