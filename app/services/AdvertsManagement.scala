@@ -3,6 +3,7 @@ package services
 import java.sql.Date
 
 import javax.inject.Singleton
+import org.mongodb.scala.bson.Document
 import play.api.libs.json.JsValue
 import play.api.libs.json.Reads.DefaultSqlDateReads
 
@@ -143,9 +144,12 @@ case class AdvertsManagement() {
 
         throw AdvertException("A new car does not have mileage and date of registration. A used car has them.")
 
-      else
-
+      else {
+        val doc: Document = Document("id" -> id, "title" -> title, "fuel" -> fuel,
+          "price" -> 1, "isNew" -> isNew, "mileage" -> mileage, "first_registration" -> first_registration)
+        mongoutility.insertAdvert(doc)
         listOfAdverts.put(id, Car(id, title, fuel, price, isNew, mileage, first_registration))
+      }
 
     }
 

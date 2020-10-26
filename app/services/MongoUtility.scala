@@ -1,6 +1,9 @@
 package services
 
 import org.mongodb.scala._
+import org.mongodb.scala.bson.collection.immutable.Document
+import org.mongodb.scala.model.Sorts.descending
+import org.mongodb.scala.model.{Filters, Projections}
 
 class MongoUtility {
 
@@ -30,20 +33,34 @@ class MongoUtility {
   }
 
 
-  def getEntireCollectionSorted(field: String): FindObservable[Document] = {
-    val res = coll.find()
+  def getEntireCollectionSorted(field: String): Unit = {
+    val res = coll.find().collect().subscribe(
+      (results: Seq[Document]) => println(s"Found: #${results}")
+    )
     res
   }
 
-  def insertAdvert(document: Document): SingleObservable[Completed] = {
-    coll.insertOne(document)
+  def readAdvert(id: String): Unit = {
+    val res = coll.find(Filters.exists("i")).sort(descending("i")).first()
+    res.subscribe(
+      (user: Document) => println(user.toJson()),                         // onNext
+      (error: Throwable) => println(s"Query failed: ${error.getMessage}"), // onError
+      () => println("Done") )                                              // onComplete
   }
 
+  def insertAdvert(doc: Document): Unit = {
+    val observable: Observable[Completed] = coll.insertOne(doc)
+    // Explictly subscribe:
+  }
 
+  def modifyAdvert(document: Document): Unit = {
+    val record = coll
+      .find()
+      .projection(
+        Projections
+          .fields(Projections.include("offset"), Projections.excludeId()))
+      .first()
 
-
-
-
-
+  }
 
 }
