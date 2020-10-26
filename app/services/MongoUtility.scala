@@ -1,8 +1,6 @@
 package services
 
 import org.mongodb.scala._
-import org.bson._
-import org.mongodb.scala.model.Sorts.ascending
 
 class MongoUtility {
 
@@ -21,16 +19,25 @@ class MongoUtility {
 
   def getTable(database: MongoDatabase): MongoCollection[Document] = {
     val coll = database.getCollection("Adverts")
-    if (coll.isInstanceOf[MongoCollection]){
-      coll
-    }
-    else {
-      database.createCollection("Advert")
-      database.getCollection("Adverts")
-    }
+//    if (coll.isInstanceOf[MongoCollection]){
+//      coll
+//    }
+//    else {
+//      database.createCollection("Advert")
+//      database.getCollection("Adverts")
+//    }
+    coll
   }
 
 
+  def getEntireCollectionSorted(field: String): FindObservable[Document] = {
+    val res = coll.find()
+    res
+  }
+
+  def insertAdvert(document: Document): SingleObservable[Completed] = {
+    coll.insertOne(document)
+  }
 
 
 

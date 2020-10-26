@@ -21,25 +21,45 @@ case class AdvertsManagement() {
     else if (listOfParam.size == 1 && !listOfParam.keySet.contains("sortBy")) {
       throw new IllegalArgumentException
     }
+    else if (listOfParam.isEmpty) {
+      p = listOfAdverts.toSeq.sortBy(_._2.id)
+      print(mongoutility.getEntireCollectionSorted("id"))
+    }
     else {
       listOfParam("sortBy") match {
-        //case "id" => { p = listOfAdverts.toSeq.sortBy(_._2.id) }
-        case "id" => { p = mongoutility.getEntireCollectionSorted("id") }
+        case "id" => {
+          p = listOfAdverts.toSeq.sortBy(_._2.id)
+          print(mongoutility.getEntireCollectionSorted("id"))
+        }
 
-        case "title" => {  p = listOfAdverts.toSeq.sortBy(_._2.title)}
-        case "fuel" => { p = listOfAdverts.toSeq.sortBy(_._2.fuel)}
-        case "price" => { p = listOfAdverts.toSeq.sortBy(_._2.price)}
-        case "isNew" => { p = listOfAdverts.toSeq.sortBy(_._2.isNew)}
-        case "mileage" => { p = listOfAdverts.toSeq.sortBy(_._2.mileage)}
+
+        case "title" => {
+          p = listOfAdverts.toSeq.sortBy(_._2.title)
+        }
+        case "fuel" => {
+          p = listOfAdverts.toSeq.sortBy(_._2.fuel)
+        }
+        case "price" => {
+          p = listOfAdverts.toSeq.sortBy(_._2.price)
+        }
+        case "isNew" => {
+          p = listOfAdverts.toSeq.sortBy(_._2.isNew)
+        }
+        case "mileage" => {
+          p = listOfAdverts.toSeq.sortBy(_._2.mileage)
+        }
         //cannot solve this implicit
         //case "first_registration" => { p = listOfAdverts.toSeq.sortBy(_._2.first_registration):_*}
-        case _ => {throw new NoSuchFieldException()}
+        case _ => {
+          throw new NoSuchFieldException()
+        }
       }
-      var m = Map[String, Car]()
-      for(elem <- p)
-        m += elem
-      m.values
     }
+    var m = Map[String, Car]()
+    for(elem <- p)
+      m += elem
+    m.values
+
   }
 
   def getAdvertByID(id: String): Car = {
