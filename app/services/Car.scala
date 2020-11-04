@@ -3,15 +3,55 @@ package services
 
 import java.sql.Date
 
+import org.mongodb.scala.bson.collection.immutable.Document
 import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
-import play.api.libs.json.{JsPath, Reads, Writes}
+import play.api.libs.json.{JsPath, JsValue, Reads, Writes}
+import services.Car.checkCar
 
 
-case class Car(id: String, title: String, fuel: String, price: Int, isNew: Boolean, mileage: Option[Int], first_registration: Option[Date]) {
+case class Car(id: String, title: String,var fuel: String, price: Int, var isNew: Boolean, var mileage: Option[Int], var first_registration: Option[Date]) {
+
+
+
+  checkCar(fuel, isNew, mileage, first_registration)
 
 }
 
 object Car{
+
+  private def checkCar(fuel: String, isNew: Boolean, mileage: Option[Int], first_registration: Option[Date]): Unit = {
+    if(!Fuel.isFuelType(fuel)){
+
+      throw AdvertException("Wrong fuel type.")
+
+    }
+
+    if (((isNew && mileage.isDefined) || (isNew && first_registration.isDefined)) ||
+      ((!isNew && mileage.isEmpty) || (!isNew && first_registration.isEmpty)))
+
+      throw AdvertException("A new car does not have mileage and date of registration. A used car has them.")
+  }
+
+
+  def jsValueToCar(json: JsValue): Car = {
+    val id = (json \ "id").as[String]
+    val title = (json \ "title").as[String]
+    val fuel = (json \ "fuel").as[String]
+    val price = (json \ "price").as[Int]
+    val isNew = (json \ "isNew").as[Boolean]
+    val mileage = (json \ "mileage").asOpt[Int]
+    val first_registration = (json \ "first_registration").asOpt[Date]
+
+    val car = new Car(id, title, fuel, price, isNew, mileage, first_registration)
+
+    car
+  }
+
+  def carToDocument(car: Car): Document = {
+    val doc: Document = Document("id" -> car.id, "title" -> car.title, "fuel" -> car.fuel,
+      "price" -> car.price, "isNew" -> car.isNew, "mileage" -> car.mileage, "first_registration" -> car.first_registration)
+    doc
+  }
 
 
   implicit val advertsWrites: Writes[Car] = (

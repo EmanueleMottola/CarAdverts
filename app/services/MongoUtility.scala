@@ -2,8 +2,12 @@ package services
 
 import org.mongodb.scala._
 import org.mongodb.scala.bson.collection.immutable.Document
-import org.mongodb.scala.model.Sorts.descending
+import org.mongodb.scala.model.Sorts.{ascending, descending}
 import org.mongodb.scala.model.{Filters, Projections}
+import play.api.libs.json.Json
+
+import scala.concurrent.Await
+import scala.concurrent.duration.DurationInt
 
 class MongoUtility {
 
@@ -14,30 +18,29 @@ class MongoUtility {
   def connect(): MongoDatabase = {
     // To directly connect to the default server localhost on port 27017
     val mongoClient: MongoClient = MongoClient()
-    val database: MongoDatabase = mongoClient.getDatabase("local")
+    val database: MongoDatabase = mongoClient.getDatabase("Adverts")
 
     database
   }
 
 
   def getTable(database: MongoDatabase): MongoCollection[Document] = {
-    val coll = database.getCollection("Adverts")
-//    if (coll.isInstanceOf[MongoCollection]){
-//      coll
-//    }
-//    else {
-//      database.createCollection("Advert")
-//      database.getCollection("Adverts")
-//    }
+    val coll = database.getCollection("adverts")
     coll
   }
 
 
-  def getEntireCollectionSorted(field: String): Unit = {
-    val res = coll.find().collect().subscribe(
-      (results: Seq[Document]) => println(s"Found: #${results}")
-    )
-    res
+  def getEntireCollectionSorted(field: String): List[Car] = {
+
+    val res = Await.result(coll.find[Document]().sort(ascending(field)).toFuture(), 2.minutes)
+
+    val iterCar = List()
+    res.foreach(doc => {
+        val json = doc.toJson()
+        val car: Car = Car.jsValueToCar(Json.parse(json))
+        iterCar.++(Iterator(car))
+    })
+    iterCar
   }
 
   def readAdvert(id: String): Unit = {

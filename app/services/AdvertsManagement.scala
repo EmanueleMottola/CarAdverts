@@ -13,9 +13,11 @@ case class AdvertsManagement() {
   private val listOfAdverts = collection.mutable.Map[String, Car]("0" -> Car("0", "Audi", "gasoline", 1500, isNew = true, None, None))
   private val mongoutility = new MongoUtility
 
-  def getListOfAdverts(listOfParam: Map[String, String]): Iterable[Car] = {
+  def getListOfAdverts(listOfParam: Map[String, String]): List[Car] = {
 
     var p = Seq[(String, Car)]()
+    var response: List[Car] = List()
+
     if(listOfParam.size > 1){
       throw new IllegalArgumentException
     }
@@ -23,8 +25,10 @@ case class AdvertsManagement() {
       throw new IllegalArgumentException
     }
     else if (listOfParam.isEmpty) {
-      p = listOfAdverts.toSeq.sortBy(_._2.id)
-      print(mongoutility.getEntireCollectionSorted("id"))
+      //p = listOfAdverts.toSeq.sortBy(_._2.id)
+      print("-----------------------TROVATO--------------------------\n")
+      response = mongoutility.getEntireCollectionSorted("id")
+      print("-----------------------TROVATO--------------------------\n")
     }
     else {
       listOfParam("sortBy") match {
@@ -60,7 +64,7 @@ case class AdvertsManagement() {
     for(elem <- p)
       m += elem
     m.values
-
+    response
   }
 
   def getAdvertByID(id: String): Car = {
@@ -69,6 +73,8 @@ case class AdvertsManagement() {
     else
       listOfAdverts(id)
   }
+
+
 
   def updateAdvertByID(json: JsValue): Unit = {
 
@@ -118,40 +124,49 @@ case class AdvertsManagement() {
 
   def createAdvert(json: JsValue): Unit = {
 
-    val id = (json \ "id").as[String]
-    val title = (json \ "title").as[String]
-    val fuel = (json \ "fuel").as[String]
-    val price = (json \ "price").as[Int]
-    val isNew = (json \ "isNew").as[Boolean]
-    val mileage = (json \ "mileage").asOpt[Int]
-    val first_registration = (json \ "first_registration").asOpt[Date]
-
-
-    if(listOfAdverts.contains(id))
-
-      throw DuplicateKeyException("Duplicate key")
-
-    else {
-
-      if(!Fuel.isFuelType(fuel)){
-
-          throw AdvertException("Wrong fuel type.")
-
-        }
-
-      if (((isNew && mileage.isDefined) || (isNew && first_registration.isDefined)) ||
-        ((!isNew && mileage.isEmpty) || (!isNew && first_registration.isEmpty)))
-
-        throw AdvertException("A new car does not have mileage and date of registration. A used car has them.")
-
-      else {
-        val doc: Document = Document("id" -> id, "title" -> title, "fuel" -> fuel,
-          "price" -> 1, "isNew" -> isNew, "mileage" -> mileage, "first_registration" -> first_registration)
-        mongoutility.insertAdvert(doc)
-        listOfAdverts.put(id, Car(id, title, fuel, price, isNew, mileage, first_registration))
-      }
-
+    try{
+      val car: Car = Car.jsValueToCar(json)
+      val doc: Document = Car.carToDocument(car)
+      mongoutility.insertAdvert(doc)
+      listOfAdverts.put(car.id, car)
     }
+
+
+
+//    val id = (json \ "id").as[String]
+//    val title = (json \ "title").as[String]
+//    val fuel = (json \ "fuel").as[String]
+//    val price = (json \ "price").as[Int]
+//    val isNew = (json \ "isNew").as[Boolean]
+//    val mileage = (json \ "mileage").asOpt[Int]
+//    val first_registration = (json \ "first_registration").asOpt[Date]
+//
+//
+//    if(listOfAdverts.contains(id))
+//
+//      throw DuplicateKeyException("Duplicate key")
+//
+//    else {
+//
+//      if(!Fuel.isFuelType(fuel)){
+//
+//          throw AdvertException("Wrong fuel type.")
+//
+//        }
+//
+//      if (((isNew && mileage.isDefined) || (isNew && first_registration.isDefined)) ||
+//        ((!isNew && mileage.isEmpty) || (!isNew && first_registration.isEmpty)))
+//
+//        throw AdvertException("A new car does not have mileage and date of registration. A used car has them.")
+//
+//      else {
+//        val doc: Document = Document("id" -> id, "title" -> title, "fuel" -> fuel,
+//          "price" -> 1, "isNew" -> isNew, "mileage" -> mileage, "first_registration" -> first_registration)
+//        mongoutility.insertAdvert(doc)
+//        listOfAdverts.put(id, Car(id, title, fuel, price, isNew, mileage, first_registration))
+//      }
+//
+//    }
 
   }
 }
