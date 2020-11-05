@@ -1,13 +1,10 @@
 package controllers
 
 import javax.inject._
-import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
-import services.{AdvertException, AdvertsManagement, Car, DuplicateKeyException, Fuel}
 import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json._
-import play.api.libs.json.Writes
-import play.api.libs.json.Reads
-import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents, Request, request}
+import play.api.mvc._
+import services.{AdvertException, AdvertsManagement, DuplicateKeyException}
 
 
 
@@ -50,7 +47,7 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
     }
     catch {
       case ex: NoSuchElementException => {
-        Status(404)("Resource not found for the requested ID")
+        Ok("{}")
       }
     }
   }

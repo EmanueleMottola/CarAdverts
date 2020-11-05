@@ -13,9 +13,10 @@ case class AdvertsManagement() {
   private val listOfAdverts = collection.mutable.Map[String, Car]("0" -> Car("0", "Audi", "gasoline", 1500, isNew = true, None, None))
   private val mongoutility = new MongoUtility
 
+
+
   def getListOfAdverts(listOfParam: Map[String, String]): List[Car] = {
 
-    var p = Seq[(String, Car)]()
     var response: List[Car] = List()
 
     if(listOfParam.size > 1){
@@ -25,53 +26,35 @@ case class AdvertsManagement() {
       throw new IllegalArgumentException
     }
     else if (listOfParam.isEmpty) {
-      //p = listOfAdverts.toSeq.sortBy(_._2.id)
-      print("-----------------------TROVATO--------------------------\n")
       response = mongoutility.getEntireCollectionSorted("id")
-      print("-----------------------TROVATO--------------------------\n")
     }
     else {
       listOfParam("sortBy") match {
-        case "id" => {
-          p = listOfAdverts.toSeq.sortBy(_._2.id)
-          print(mongoutility.getEntireCollectionSorted("id"))
-        }
-
-
-        case "title" => {
-          p = listOfAdverts.toSeq.sortBy(_._2.title)
-        }
-        case "fuel" => {
-          p = listOfAdverts.toSeq.sortBy(_._2.fuel)
-        }
-        case "price" => {
-          p = listOfAdverts.toSeq.sortBy(_._2.price)
-        }
-        case "isNew" => {
-          p = listOfAdverts.toSeq.sortBy(_._2.isNew)
-        }
-        case "mileage" => {
-          p = listOfAdverts.toSeq.sortBy(_._2.mileage)
-        }
-        //cannot solve this implicit
-        //case "first_registration" => { p = listOfAdverts.toSeq.sortBy(_._2.first_registration):_*}
-        case _ => {
+        case "id" =>
+          response = mongoutility.getEntireCollectionSorted("id")
+        case "title" =>
+          response = mongoutility.getEntireCollectionSorted("title")
+        case "fuel" =>
+          response = mongoutility.getEntireCollectionSorted("fuel")
+        case "price" =>
+          response = mongoutility.getEntireCollectionSorted("price")
+        case "isNew" =>
+          response = mongoutility.getEntireCollectionSorted("isNew")
+        case "mileage" =>
+          response = mongoutility.getEntireCollectionSorted("mileage")
+        case "first_registration" =>
+          response = mongoutility.getEntireCollectionSorted("first_registration")
+        case _ =>
           throw new NoSuchFieldException()
-        }
       }
     }
-    var m = Map[String, Car]()
-    for(elem <- p)
-      m += elem
-    m.values
     response
   }
 
   def getAdvertByID(id: String): Car = {
-    if (!listOfAdverts.contains(id))
-      throw new NoSuchElementException
-    else
-      listOfAdverts(id)
+    try{
+      mongoutility.readAdvert(id)
+    }
   }
 
 
@@ -128,7 +111,6 @@ case class AdvertsManagement() {
       val car: Car = Car.jsValueToCar(json)
       val doc: Document = Car.carToDocument(car)
       mongoutility.insertAdvert(doc)
-      listOfAdverts.put(car.id, car)
     }
 
 

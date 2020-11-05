@@ -1,8 +1,11 @@
 package services
 
+import java.util.NoSuchElementException
+
 import org.mongodb.scala._
 import org.mongodb.scala.bson.collection.immutable.Document
-import org.mongodb.scala.model.Sorts.{ascending, descending}
+import org.mongodb.scala.model.Projections.excludeId
+import org.mongodb.scala.model.Sorts.ascending
 import org.mongodb.scala.model.{Filters, Projections}
 import play.api.libs.json.Json
 
@@ -32,28 +35,31 @@ class MongoUtility {
 
   def getEntireCollectionSorted(field: String): List[Car] = {
 
-    val res = Await.result(coll.find[Document]().sort(ascending(field)).toFuture(), 2.minutes)
+    val res = Await.result(coll.find[Document]().projection(excludeId()).sort(ascending(field)).toFuture(), 2.minutes)
 
-    val iterCar = List()
+    var iterCar = List[Car]()
     res.foreach(doc => {
         val json = doc.toJson()
         val car: Car = Car.jsValueToCar(Json.parse(json))
-        iterCar.++(Iterator(car))
+        iterCar = iterCar.++(Iterator(car))
     })
     iterCar
   }
 
-  def readAdvert(id: String): Unit = {
-    val res = coll.find(Filters.exists("i")).sort(descending("i")).first()
-    res.subscribe(
-      (user: Document) => println(user.toJson()),                         // onNext
-      (error: Throwable) => println(s"Query failed: ${error.getMessage}"), // onError
-      () => println("Done") )                                              // onComplete
+  def readAdvert(id: String): Car = {
+    try{
+      val ris = Await.result(coll.find[Document]({Filters.equal("id", id)}).first().toFuture(), 2.minutes)
+      val car: Car = Car.jsValueToCar(Json.parse(ris.toJson()))
+      car
+    }
+    catch {
+      case ex: NullPointerException =>
+        throw new NoSuchElementException
+    }
   }
 
   def insertAdvert(doc: Document): Unit = {
-    val observable: Observable[Completed] = coll.insertOne(doc)
-    // Explictly subscribe:
+    Await.result(coll.insertOne(doc).toFuture, 2.minutes)
   }
 
   def modifyAdvert(document: Document): Unit = {
