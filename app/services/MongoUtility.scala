@@ -4,9 +4,8 @@ import java.util.NoSuchElementException
 
 import org.mongodb.scala._
 import org.mongodb.scala.bson.collection.immutable.Document
-import org.mongodb.scala.model.Projections.excludeId
+import org.mongodb.scala.model.Filters
 import org.mongodb.scala.model.Sorts.ascending
-import org.mongodb.scala.model.{Filters, Projections}
 import play.api.libs.json.Json
 
 import scala.concurrent.Await
@@ -35,7 +34,7 @@ class MongoUtility {
 
   def getEntireCollectionSorted(field: String): List[Car] = {
 
-    val res = Await.result(coll.find[Document]().projection(excludeId()).sort(ascending(field)).toFuture(), 2.minutes)
+    val res = Await.result(coll.find[Document]().sort(ascending(field)).toFuture(), 2.minutes)
 
     var iterCar = List[Car]()
     res.foreach(doc => {
@@ -48,7 +47,7 @@ class MongoUtility {
 
   def readAdvert(id: String): Car = {
     try{
-      val ris = Await.result(coll.find[Document]({Filters.equal("id", id)}).first().toFuture(), 2.minutes)
+      val ris = Await.result(coll.find[Document]({Filters.equal("_id", id)}).first().toFuture(), 2.minutes)
       val car: Car = Car.jsValueToCar(Json.parse(ris.toJson()))
       car
     }
@@ -63,12 +62,12 @@ class MongoUtility {
   }
 
   def modifyAdvert(document: Document): Unit = {
-    val record = coll
-      .find()
-      .projection(
-        Projections
-          .fields(Projections.include("offset"), Projections.excludeId()))
-      .first()
+    Await.result(coll.findOneAndReplace(Filters.equal("_id", document("id")), document).toFuture(), 2.minutes)
+  }
+
+  def removeAdvert(id: String): Unit = {
+    println(id)
+    Await.result(coll.deleteOne({Filters.equal("_id", id)}).toFuture(), 2.minutes)
 
   }
 

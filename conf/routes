@@ -6,7 +6,8 @@
 GET     /*path/                         controllers.HomeController.untrail(path: String)
 
 # RESTful apis routes
-GET     /api/adverts                    controllers.HomeController.getAll
+GET     /                               controllers.HomeController.index
+GET     /api/adverts                   controllers.HomeController.getAll(sortBy: Option[String])
 GET     /api/adverts/:id                controllers.HomeController.readAdv(id)
 PUT     /api/adverts/:id                controllers.HomeController.update(id)
 DELETE  /api/adverts/:id                controllers.HomeController.delete(id)

@@ -6,35 +6,38 @@ import java.sql.Date
 import org.mongodb.scala.bson.collection.immutable.Document
 import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
 import play.api.libs.json.{JsPath, JsValue, Reads, Writes}
-import services.Car.checkCar
+import services.Car.{checkErrorCar}
 
 
 case class Car(id: String, title: String,var fuel: String, price: Int, var isNew: Boolean, var mileage: Option[Int], var first_registration: Option[Date]) {
 
-
-
-  checkCar(fuel, isNew, mileage, first_registration)
+  if (checkErrorCar(fuel, isNew, mileage, first_registration))
+    throw AdvertException(id)
 
 }
 
 object Car{
 
-  private def checkCar(fuel: String, isNew: Boolean, mileage: Option[Int], first_registration: Option[Date]): Unit = {
+  private def checkErrorCar(fuel: String, isNew: Boolean, mileage: Option[Int], first_registration: Option[Date]): Boolean = {
     if(!Fuel.isFuelType(fuel)){
 
-      throw AdvertException("Wrong fuel type.")
+      return true
 
     }
 
-    if (((isNew && mileage.isDefined) || (isNew && first_registration.isDefined)) ||
-      ((!isNew && mileage.isEmpty) || (!isNew && first_registration.isEmpty)))
+    if (((isNew && mileage!=null) || (isNew && first_registration!=null)) ||
+      ((!isNew && mileage==null) || (!isNew && first_registration==null))) {
 
-      throw AdvertException("A new car does not have mileage and date of registration. A used car has them.")
+      return true
+    }
+
+    false
+
   }
 
 
   def jsValueToCar(json: JsValue): Car = {
-    val id = (json \ "id").as[String]
+    val id = (json \ "_id").as[String]
     val title = (json \ "title").as[String]
     val fuel = (json \ "fuel").as[String]
     val price = (json \ "price").as[Int]
@@ -48,14 +51,14 @@ object Car{
   }
 
   def carToDocument(car: Car): Document = {
-    val doc: Document = Document("id" -> car.id, "title" -> car.title, "fuel" -> car.fuel,
+    val doc: Document = Document("_id" -> car.id, "title" -> car.title, "fuel" -> car.fuel,
       "price" -> car.price, "isNew" -> car.isNew, "mileage" -> car.mileage, "first_registration" -> car.first_registration)
     doc
   }
 
 
   implicit val advertsWrites: Writes[Car] = (
-    (JsPath \ "id").write[String] and
+    (JsPath \ "_id").write[String] and
     (JsPath \ "title").write[String] and
     (JsPath \ "fuel").write[String] and
     (JsPath \ "price").write[Int] and
@@ -65,7 +68,7 @@ object Car{
   )(unlift(Car.unapply))
 
   implicit val advertsReads: Reads[Car] = (
-    (JsPath \ "id").read[String] and
+    (JsPath \ "_id").read[String] and
     (JsPath \ "title").read[String] and
     (JsPath \ "fuel").read[String] and
     (JsPath \ "price").read[Int] and
