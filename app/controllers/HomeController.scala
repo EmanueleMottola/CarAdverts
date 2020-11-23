@@ -32,7 +32,7 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
       val parameters: Map[String, Seq[String]] = request.queryString
       val flatMap: Map[String, String] = parameters.map { case (k, v) => k -> v.mkString } //flat, only one String
 
-    println(sortBy)
+    //println(sortBy)
     try{
       Ok(Json.toJson(adverts.getListOfAdverts(flatMap)))
     }

@@ -6,27 +6,27 @@ import java.sql.Date
 import org.mongodb.scala.bson.collection.immutable.Document
 import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
 import play.api.libs.json.{JsPath, JsValue, Reads, Writes}
-import services.Car.{checkErrorCar}
+import services.Car.checkErrorCar
 
 
-case class Car(id: String, title: String,var fuel: String, price: Int, var isNew: Boolean, var mileage: Option[Int], var first_registration: Option[Date]) {
+case class Car(id: String, title: String, var fuel: String, price: Int, var is_new: Boolean, var mileage: Option[Int], var first_registration: Option[Date]) {
 
-  if (checkErrorCar(fuel, isNew, mileage, first_registration))
+  if (checkErrorCar(fuel, is_new, mileage, first_registration))
     throw AdvertException(id)
 
 }
 
 object Car{
 
-  private def checkErrorCar(fuel: String, isNew: Boolean, mileage: Option[Int], first_registration: Option[Date]): Boolean = {
+  private def checkErrorCar(fuel: String, is_new: Boolean, mileage: Option[Int], first_registration: Option[Date]): Boolean = {
     if(!Fuel.isFuelType(fuel)){
 
       return true
 
     }
 
-    if (((isNew && mileage!=null) || (isNew && first_registration!=null)) ||
-      ((!isNew && mileage==null) || (!isNew && first_registration==null))) {
+    if (((is_new && mileage!=null) || (is_new && first_registration!=null)) ||
+      ((!is_new && mileage==null) || (!is_new && first_registration==null))) {
 
       return true
     }
@@ -41,18 +41,18 @@ object Car{
     val title = (json \ "title").as[String]
     val fuel = (json \ "fuel").as[String]
     val price = (json \ "price").as[Int]
-    val isNew = (json \ "isNew").as[Boolean]
+    val is_new = (json \ "is_new").as[Boolean]
     val mileage = (json \ "mileage").asOpt[Int]
     val first_registration = (json \ "first_registration").asOpt[Date]
 
-    val car = new Car(id, title, fuel, price, isNew, mileage, first_registration)
+    val car = new Car(id, title, fuel, price, is_new, mileage, first_registration)
 
     car
   }
 
   def carToDocument(car: Car): Document = {
     val doc: Document = Document("_id" -> car.id, "title" -> car.title, "fuel" -> car.fuel,
-      "price" -> car.price, "isNew" -> car.isNew, "mileage" -> car.mileage, "first_registration" -> car.first_registration)
+      "price" -> car.price, "is_new" -> car.is_new, "mileage" -> car.mileage, "first_registration" -> car.first_registration)
     doc
   }
 
@@ -62,7 +62,7 @@ object Car{
     (JsPath \ "title").write[String] and
     (JsPath \ "fuel").write[String] and
     (JsPath \ "price").write[Int] and
-    (JsPath \ "isNew").write[Boolean] and
+    (JsPath \ "is_new").write[Boolean] and
     (JsPath \ "mileage").writeNullable[Int] and
     (JsPath \ "first_registration").writeNullable[Date]
   )(unlift(Car.unapply))
@@ -72,7 +72,7 @@ object Car{
     (JsPath \ "title").read[String] and
     (JsPath \ "fuel").read[String] and
     (JsPath \ "price").read[Int] and
-    (JsPath \ "isNew").read[Boolean] and
+    (JsPath \ "is_new").read[Boolean] and
     (JsPath \ "mileage").readNullable[Int] and
     (JsPath \ "first_registration").readNullable[Date]
   )(Car.apply _)

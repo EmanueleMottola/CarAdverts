@@ -66,7 +66,7 @@ class MongoUtility {
   }
 
   def removeAdvert(id: String): Unit = {
-    println(id)
+    //println(id)
     Await.result(coll.deleteOne({Filters.equal("_id", id)}).toFuture(), 2.minutes)
 
   }
