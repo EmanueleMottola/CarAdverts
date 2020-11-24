@@ -3,15 +3,15 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 # to handle trailing /
+GET     /                               controllers.HomeController.index()
 GET     /*path/                         controllers.HomeController.untrail(path: String)
 
 # RESTful apis routes
-GET     /                               controllers.HomeController.index
-GET     /api/adverts                   controllers.HomeController.getAll(sortBy: Option[String])
-GET     /api/adverts/:id                controllers.HomeController.readAdv(id)
-PUT     /api/adverts/:id                controllers.HomeController.update(id)
-DELETE  /api/adverts/:id                controllers.HomeController.delete(id)
-POST    /api/adverts                    controllers.HomeController.create
+GET     /api/adverts                   controllers.HomeController.getAllCarAdverts(sortBy ?= null)
+GET     /api/adverts/:id                controllers.HomeController.getCarAdvertByField(id)
+PUT     /api/adverts/:id                controllers.HomeController.updateCarAdvert(id)
+DELETE  /api/adverts/:id                controllers.HomeController.deleteCarAdvert(id)
+POST    /api/adverts                    controllers.HomeController.insertCarAdvert
 
 
       

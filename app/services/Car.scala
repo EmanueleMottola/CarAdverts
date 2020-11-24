@@ -9,24 +9,24 @@ import play.api.libs.json.{JsPath, JsValue, Reads, Writes}
 import services.Car.checkErrorCar
 
 
-case class Car(id: String, title: String, var fuel: String, price: Int, var is_new: Boolean, var mileage: Option[Int], var first_registration: Option[Date]) {
+case class Car( val id: String, val title: String, val fuel: String, val price: Int, val is_new: Boolean, val mileage: Option[Int], val firstRegistration: Option[Date]) {
 
-  if (checkErrorCar(fuel, is_new, mileage, first_registration))
+  if (checkErrorCar(fuel, is_new, mileage, firstRegistration))
     throw AdvertException(id)
 
 }
 
 object Car{
 
-  private def checkErrorCar(fuel: String, is_new: Boolean, mileage: Option[Int], first_registration: Option[Date]): Boolean = {
+  private def checkErrorCar(fuel: String, is_new: Boolean, mileage: Option[Int], firstRegistration: Option[Date]): Boolean = {
     if(!Fuel.isFuelType(fuel)){
 
       return true
 
     }
 
-    if (((is_new && mileage!=null) || (is_new && first_registration!=null)) ||
-      ((!is_new && mileage==null) || (!is_new && first_registration==null))) {
+    if (((is_new && mileage!=null) || (is_new && firstRegistration!=null)) ||
+      ((!is_new && mileage==null) || (!is_new && firstRegistration==null))) {
 
       return true
     }
@@ -43,16 +43,16 @@ object Car{
     val price = (json \ "price").as[Int]
     val is_new = (json \ "is_new").as[Boolean]
     val mileage = (json \ "mileage").asOpt[Int]
-    val first_registration = (json \ "first_registration").asOpt[Date]
+    val firstRegistration = (json \ "firstRegistration").asOpt[Date]
 
-    val car = new Car(id, title, fuel, price, is_new, mileage, first_registration)
+    val car = new Car(id, title, fuel, price, is_new, mileage, firstRegistration)
 
     car
   }
 
   def carToDocument(car: Car): Document = {
     val doc: Document = Document("_id" -> car.id, "title" -> car.title, "fuel" -> car.fuel,
-      "price" -> car.price, "is_new" -> car.is_new, "mileage" -> car.mileage, "first_registration" -> car.first_registration)
+      "price" -> car.price, "is_new" -> car.is_new, "mileage" -> car.mileage, "firstRegistration" -> car.firstRegistration)
     doc
   }
 
@@ -64,7 +64,7 @@ object Car{
     (JsPath \ "price").write[Int] and
     (JsPath \ "is_new").write[Boolean] and
     (JsPath \ "mileage").writeNullable[Int] and
-    (JsPath \ "first_registration").writeNullable[Date]
+    (JsPath \ "firstRegistration").writeNullable[Date]
   )(unlift(Car.unapply))
 
   implicit val advertsReads: Reads[Car] = (
@@ -74,7 +74,7 @@ object Car{
     (JsPath \ "price").read[Int] and
     (JsPath \ "is_new").read[Boolean] and
     (JsPath \ "mileage").readNullable[Int] and
-    (JsPath \ "first_registration").readNullable[Date]
+    (JsPath \ "firstRegistration").readNullable[Date]
   )(Car.apply _)
 }
 

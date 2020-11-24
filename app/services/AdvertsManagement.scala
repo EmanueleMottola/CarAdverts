@@ -1,53 +1,32 @@
 package services
 
-import javax.inject.Singleton
-import org.mongodb.scala.bson.Document
-import play.api.libs.json.JsValue
 
-
-@Singleton
-case class AdvertsManagement() {
+object AdvertsManagement{
   private val mongoutility = new MongoUtility
 
-  def getListOfAdverts(listOfParam: Map[String, String]): List[Car] = {
+  /** Queries MongoDB and returns the list
+   *  ordered according to the field.
+   *
+   * @param field the field according which to order the list.
+   * @return a List of Car ordered according to field.
+   */
+  def getListOfAdverts(field: String): Seq[String] = {
 
-    var response: List[Car] = List()
+    val response = field match {
+      case "id" => mongoutility.getEntireCollectionSorted("_id")
+      case "title" => mongoutility.getEntireCollectionSorted("title")
+      case "fuel" => mongoutility.getEntireCollectionSorted("fuel")
+      case "price" => mongoutility.getEntireCollectionSorted("price")
+      case "isNew" => mongoutility.getEntireCollectionSorted("isNew")
+      case "mileage" => mongoutility.getEntireCollectionSorted("mileage")
+      case "firstRegistration" => mongoutility.getEntireCollectionSorted("firstRegistration")
+      case _ => mongoutility.getEntireCollectionSorted("_id")
+    }
 
-    println(listOfParam)
-    if(listOfParam.size > 1){
-      throw new IllegalArgumentException
-    }
-    else if (listOfParam.size == 1 && !listOfParam.keySet.contains("sortBy")) {
-      throw new IllegalArgumentException
-    }
-    else if (listOfParam.isEmpty) {
-      response = mongoutility.getEntireCollectionSorted("_id")
-    }
-    else {
-      println(listOfParam("sortBy"))
-      listOfParam("sortBy") match {
-        case "id" =>
-          response = mongoutility.getEntireCollectionSorted("_id")
-        case "title" =>
-          response = mongoutility.getEntireCollectionSorted("title")
-        case "fuel" =>
-          response = mongoutility.getEntireCollectionSorted("fuel")
-        case "price" =>
-          response = mongoutility.getEntireCollectionSorted("price")
-        case "isNew" =>
-          response = mongoutility.getEntireCollectionSorted("isNew")
-        case "mileage" =>
-          response = mongoutility.getEntireCollectionSorted("mileage")
-        case "first_registration" =>
-          response = mongoutility.getEntireCollectionSorted("first_registration")
-        case _ =>
-          throw new NoSuchFieldException()
-      }
-    }
     response
   }
 
-  def getAdvertByID(id: String): Car = {
+  /*def getAdvertByID(id: String): Car = {
     mongoutility.readAdvert(id)
   }
 
@@ -74,11 +53,8 @@ case class AdvertsManagement() {
     val doc: Document = Car.carToDocument(car)
     mongoutility.insertAdvert(doc)
 
-  }
+  }*/
 }
 
-object  AdvertsManagement {
-
-}
 
 

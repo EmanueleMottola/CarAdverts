@@ -13,10 +13,17 @@ import scala.concurrent.duration.DurationInt
 
 class MongoUtility {
 
+  // MongoDatabase instance
   private val db = this.connect()
+
+  // MongoCollection instance
   private val coll = this.getTable(db)
 
 
+  /**
+   * Connects to MongoDB at http://localhost:27017
+   * @return MongoDatabase pointer to the "Adverts" database
+   */
   def connect(): MongoDatabase = {
     // To directly connect to the default server localhost on port 27017
     val mongoClient: MongoClient = MongoClient()
@@ -25,24 +32,28 @@ class MongoUtility {
     database
   }
 
-
+  /** Retrieves pointer to the required collection
+   *
+   * @param database MongoDatabase instance returned by connect()
+   * @return MongoCollection pointer to the "adverts" collection
+   */
   def getTable(database: MongoDatabase): MongoCollection[Document] = {
     val coll = database.getCollection("adverts")
     coll
   }
 
-
-  def getEntireCollectionSorted(field: String): List[Car] = {
+  /** Query the database, retrieves all the car adverts.
+   *
+   * @param field the field according which to order the documents from the database.
+   * @return Seq[String]. Every string is an entry.
+   *         The Seq is ordered according to the field.
+   */
+  def getEntireCollectionSorted(field: String): Seq[String] = {
 
     val res = Await.result(coll.find[Document]().sort(ascending(field)).toFuture(), 2.minutes)
 
-    var iterCar = List[Car]()
-    res.foreach(doc => {
-        val json = doc.toJson()
-        val car: Car = Car.jsValueToCar(Json.parse(json))
-        iterCar = iterCar.++(Iterator(car))
-    })
-    iterCar
+    val seqCar: Seq[String] = res.map(x => x.toJson())
+    seqCar
   }
 
   def readAdvert(id: String): Car = {
@@ -70,5 +81,6 @@ class MongoUtility {
     Await.result(coll.deleteOne({Filters.equal("_id", id)}).toFuture(), 2.minutes)
 
   }
+
 
 }
