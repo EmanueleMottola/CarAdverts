@@ -1,8 +1,10 @@
 package services
 
+import org.mongodb.scala.bson.BsonDocument
+
 
 object AdvertsManagement{
-  private val mongoutility = new MongoUtility
+  private val mongoutility = MongoUtility
 
   /** Queries MongoDB and returns the list
    *  ordered according to the field.
@@ -10,7 +12,7 @@ object AdvertsManagement{
    * @param field the field according which to order the list.
    * @return a List of Car ordered according to field.
    */
-  def getListOfAdverts(field: String): Seq[String] = {
+  def getListOfAdverts(field: String): Seq[BsonDocument] = {
 
     val response = field match {
       case "id" => mongoutility.getEntireCollectionSorted("_id")

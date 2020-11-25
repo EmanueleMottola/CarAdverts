@@ -23,7 +23,7 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
   }
 
   def getAllCarAdverts(field: String): Action[AnyContent] = Action {
-    Ok(Json.toJson(AdvertsManagement.getListOfAdverts(field)))
+    Ok("Json.toJson(AdvertsManagement.getListOfAdverts(field)")
   }
 
   def getCarAdvertByField(id: String): Action[AnyContent] = Action {

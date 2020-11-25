@@ -3,7 +3,7 @@ package services
 import java.util.NoSuchElementException
 
 import org.mongodb.scala._
-import org.mongodb.scala.bson.collection.immutable.Document
+import org.mongodb.scala.bson.BsonDocument
 import org.mongodb.scala.model.Filters
 import org.mongodb.scala.model.Sorts.ascending
 import play.api.libs.json.Json
@@ -11,13 +11,13 @@ import play.api.libs.json.Json
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 
-class MongoUtility {
+object MongoUtility {
 
   // MongoDatabase instance
-  private val db = this.connect()
+  val db = this.connect()
 
   // MongoCollection instance
-  private val coll = this.getTable(db)
+  val coll = this.getTable(db)
 
 
   /**
@@ -48,12 +48,11 @@ class MongoUtility {
    * @return Seq[String]. Every string is an entry.
    *         The Seq is ordered according to the field.
    */
-  def getEntireCollectionSorted(field: String): Seq[String] = {
+  def getEntireCollectionSorted(field: String): Seq[BsonDocument] = {
 
     val res = Await.result(coll.find[Document]().sort(ascending(field)).toFuture(), 2.minutes)
-
-    val seqCar: Seq[String] = res.map(x => x.toJson())
-    seqCar
+    val seq: Seq[BsonDocument] = res.map(x => x.toBsonDocument)
+    seq
   }
 
   def readAdvert(id: String): Car = {
