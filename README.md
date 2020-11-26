@@ -1,4 +1,4 @@
-# CarAdverts_assignment
+# CarAdverts
 
 RESTful web-service written in Play! framework.  The service should allow users to place new car adverts and view, modify and delete existing car adverts.
 
