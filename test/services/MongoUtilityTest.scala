@@ -1,84 +1,94 @@
 package services
 
-import java.text.SimpleDateFormat
-
-import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
-import org.mongodb.scala.bson.{BsonBoolean, BsonDocument, BsonInt32, BsonString}
 
 class MongoUtilityTest {
-
-  val db = MongoUtility.connect()
-  val coll = MongoUtility.getTable(db)
 
   @Test
   def getEntireCollectionSortedTest(): Unit = {
 
-    val pattern: String = "yyyy-dd-mm'T'hh:mm:ssXXX"
-    val simpleDateFormat: SimpleDateFormat = new SimpleDateFormat(pattern)
+    // checking based on _id
+    val ordID: Ordering[String] = Ordering[String]
+    val seqID = MongoUtility.getEntireCollectionSorted("_id")
+
+    val resID = seqID match {
+      case Seq() => true
+      case Seq(_) => true
+      case _ => seqID.sliding(2).forall { case Seq(x,y) => ordID.lt(x.get("_id").toString,y.get("_id").toString)}
+    }
+    assertTrue(resID)
+
+    // checking based on title
+    val ordTitle: Ordering[String] = Ordering[String]
+    val seqTitle = MongoUtility.getEntireCollectionSorted("title")
+
+    val resTitle = seqTitle match {
+      case Seq() => true
+      case Seq(_) => true
+      case _ => seqTitle.sliding(2).forall { case Seq(x,y) => ordTitle.lteq(x.get("title").toString,y.get("title").toString)}
+    }
+    assertTrue(resTitle)
+
+    // checking based on fuel
+    val ordFuel: Ordering[String] = Ordering[String]
+    val seqFuel = MongoUtility.getEntireCollectionSorted("fuel")
+
+    val resFuel = seqFuel match {
+      case Seq() => true
+      case Seq(_) => true
+      case _ => seqFuel.sliding(2).forall { case Seq(x,y) => ordFuel.lteq(x.get("fuel").toString,y.get("fuel").toString)}
+    }
+    assertTrue(resFuel)
 
 
-    val doc0 = BsonDocument(
-      "_id" -> BsonString("0"),
-      "title" -> BsonString("Audi A5"),
-      "fuel" -> BsonString("gasoline"),
-      "price" -> BsonInt32(21500),
-      "isNew" -> BsonBoolean(false),
-      "mileage" -> BsonInt32(57000),
-      "firstRegistration" -> "2019-12-20T00:00:00Z"
-    )
-    val doc1 = BsonDocument(
-      "_id" -> BsonString("1"),
-      "title" -> BsonString("Fiat Panda"),
-      "fuel" -> BsonString("gasoline"),
-      "price" -> BsonInt32(6500),
-      "isNew" -> BsonBoolean(false),
-      "mileage" -> BsonInt32(107000),
-      "firstRegistration" -> "2018-11-14T00:00:00Z"
-    )
-    val doc2 = BsonDocument(
-      "_id" -> BsonString("2"),
-      "title" -> BsonString("BMW X6"),
-      "fuel" -> BsonString("diesel"),
-      "price" -> BsonInt32(13500),
-      "isNew" -> BsonBoolean(false),
-      "mileage" -> BsonInt32(127000),
-      "firstRegistration" -> "2017-01-14T00:00:00Z"
-    )
+    // checking based on price
+    val ordPrice: Ordering[Int] = Ordering[Int]
+    val seqPrice = MongoUtility.getEntireCollectionSorted("price")
 
-    val mySeqID = MongoUtility.getEntireCollectionSorted("_id")
-    assertEquals(doc0, mySeqID(0))
-    assertEquals(doc1, mySeqID(1))
-    assertEquals(doc2, mySeqID(2))
+    val resPrice = seqPrice match {
+      case Seq() => true
+      case Seq(_) => true
+      case _ => seqPrice.sliding(2).forall { case Seq(x,y) => ordPrice.lteq(x.get("price").asInt32().getValue, y.get("price").asInt32().getValue)}
+    }
+    assertTrue(resPrice)
 
-    val mySeqTitle = MongoUtility.getEntireCollectionSorted("title")
-    assertEquals(doc0, mySeqTitle(0))
-    assertEquals(doc2, mySeqTitle(1))
-    assertEquals(doc1, mySeqTitle(2))
+    // checking based on isNew
+    val ordIsNew: Ordering[Boolean] = Ordering[Boolean]
+    val seqIsNew = MongoUtility.getEntireCollectionSorted("isNew")
 
-    val mySeqFuel = MongoUtility.getEntireCollectionSorted("fuel")
-    assertEquals(doc2, mySeqFuel(0))
+    val resIsNew = seqIsNew match {
+      case Seq() => true
+      case Seq(_) => true
+      case _ => seqIsNew.sliding(2).forall { case Seq(x,y) => ordIsNew.lteq(x.get("isNew").asBoolean().getValue,y.get("isNew").asBoolean().getValue)}
+    }
+    assertTrue(resIsNew)
 
-    val mySeqPrice = MongoUtility.getEntireCollectionSorted("price")
-    assertEquals(doc1, mySeqPrice(0))
-    assertEquals(doc2, mySeqPrice(1))
-    assertEquals(doc0, mySeqPrice(2))
 
-    val mySeqisNew = MongoUtility.getEntireCollectionSorted("isNew")
-    assertEquals(doc0, mySeqisNew(0))
-    assertEquals(doc1, mySeqisNew(1))
-    assertEquals(doc2, mySeqisNew(2))
+    // checking based on mileage
+    val ordMileage: Ordering[Int] = Ordering[Int]
+    val seqMileage = MongoUtility.getEntireCollectionSorted("mileage")
 
-    val mySeqMileage = MongoUtility.getEntireCollectionSorted("mileage")
-    assertEquals(doc0, mySeqMileage(0))
-    assertEquals(doc1, mySeqMileage(1))
-    assertEquals(doc2, mySeqMileage(2))
+     val resMileage = seqMileage match {
+      case Seq() => true
+      case Seq(_) => true
+      case _ => seqMileage.sliding(2).forall { case Seq(x,y) => ordMileage.lteq(x.get("mileage").asInt32().getValue,y.get("mileage").asInt32().getValue)}
+    }
+    assertTrue(resMileage)
 
-    val mySeqfirstRegistration = MongoUtility.getEntireCollectionSorted("firstRegistration")
-    assertEquals(doc2, mySeqfirstRegistration(0))
-    assertEquals(doc1, mySeqfirstRegistration(1))
-    assertEquals(doc0, mySeqfirstRegistration(2))
+    // checking based on firstRegistration
+    val ordFirstRegistration: Ordering[String] = Ordering[String]
+    val seqFirstRegistration = MongoUtility.getEntireCollectionSorted("firstRegistration")
+
+    val resFirstRegistration = seqFirstRegistration match {
+      case Seq() => true
+      case Seq(_) => true
+      case _ => seqFirstRegistration.sliding(2).forall { case Seq(x,y) => ordFirstRegistration.lteq(x.get("firstRegistration").toString,y.get("firstRegistration").toString)}
+    }
+    assertTrue(resFirstRegistration)
 
   }
+
+
 }
 
