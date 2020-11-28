@@ -72,15 +72,16 @@ object MongoUtility {
 
   /**
    * Inserts an advert in the database
-   * @param doc BsonDocument describing the advert
+   * @param doc BsonDocument describing the advert.
+   * @return Boolean true if success, false otherwise
    */
-  def insertAdvert(doc: BsonDocument): String = {
+  def insertAdvert(doc: BsonDocument): Boolean = {
     try{
       Await.result(coll.insertOne(doc).toFuture, 2.minutes)
-      "Inserted"
+      true
     }
     catch {
-      case ex: MongoWriteException => "Not inserted"
+      case ex: MongoWriteException => false
     }
   }
 

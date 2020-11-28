@@ -6,6 +6,8 @@ import org.mongodb.scala.bson.{BsonBoolean, BsonDocument, BsonInt32, BsonString}
 
 class MongoUtilityTest {
 
+
+
   @Test
   def insertAdvertTest(): Unit = {
     val expectedAdvert1: BsonDocument = BsonDocument(
@@ -28,14 +30,13 @@ class MongoUtilityTest {
       "firstRegistration" -> BsonString("2019-12-20T00:00:00Z")
     )
 
-    val expectedMessage1: String = MongoUtility.insertAdvert(expectedAdvert1)
-    val expectedMessage2: String = MongoUtility.insertAdvert(expectedAdvert2)
-    val actualMessage1: String = "Inserted"
-    val actualMessage2: String = "Not inserted"
+    val expectedMessage1: Boolean = MongoUtility.insertAdvert(expectedAdvert1)
+    val expectedMessage2: Boolean = MongoUtility.insertAdvert(expectedAdvert2)
+    val actualMessage1: Boolean = true
+    val actualMessage2: Boolean = false
 
     assertEquals(expectedMessage1, actualMessage1)
     assertEquals(expectedMessage2, actualMessage2)
-
 
     val actualAdvert: BsonDocument = MongoUtility.getAdvertById("10")
 
