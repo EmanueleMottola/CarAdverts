@@ -6,12 +6,49 @@ import org.mongodb.scala.bson.{BsonBoolean, BsonDocument, BsonInt32, BsonString}
 
 class MongoUtilityTest {
 
+  @Test
+  def removeAdvertTest(): Unit = {
+
+    // check that the advert is in the database
+    val idPresent: String = "0"
+    val idNotPresent: String = "-1"
+
+    val expectedAdvert1: BsonDocument = BsonDocument(
+      "_id" -> BsonString("0"),
+      "title" -> BsonString("Audi A5"),
+      "fuel" -> BsonString("gasoline"),
+      "price" -> BsonInt32(21500),
+      "isNew" -> BsonBoolean(false),
+      "mileage" -> BsonInt32(57000),
+      "firstRegistration" -> BsonString("2019-12-20T00:00:00Z")
+    )
+    val expectedAdvert2 : BsonDocument = BsonDocument()
+
+    val actualAdvert1 = MongoUtility.getAdvertById(idPresent)
+    val actualAdvert2 = MongoUtility.getAdvertById(idNotPresent)
+
+    assertEquals(expectedAdvert1, actualAdvert1)
+    assertEquals(expectedAdvert2, actualAdvert2)
+
+    MongoUtility.removeAdvert(idPresent)
+    MongoUtility.removeAdvert(idNotPresent)
+
+    // check neither of expectedAdvert1 and expectedAdvert2 is in the db
+    val expectedAdvert3 = MongoUtility.getAdvertById(idPresent)
+    val expectedAdvert4 = MongoUtility.getAdvertById(idNotPresent)
+
+    assertEquals(BsonDocument(), expectedAdvert3)
+    assertEquals(BsonDocument(), expectedAdvert4)
+
+    MongoUtility.insertAdvert(expectedAdvert1)
+
+  }
 
 
   @Test
   def insertAdvertTest(): Unit = {
     val expectedAdvert1: BsonDocument = BsonDocument(
-      "_id" -> BsonString("10"),
+      "_id" -> BsonString("-1"),
       "title" -> BsonString("Audi A5"),
       "fuel" -> BsonString("gasoline"),
       "price" -> BsonInt32(21500),
@@ -30,17 +67,19 @@ class MongoUtilityTest {
       "firstRegistration" -> BsonString("2019-12-20T00:00:00Z")
     )
 
-    val expectedMessage1: Boolean = MongoUtility.insertAdvert(expectedAdvert1)
-    val expectedMessage2: Boolean = MongoUtility.insertAdvert(expectedAdvert2)
-    val actualMessage1: Boolean = true
-    val actualMessage2: Boolean = false
+    val actualMessage1: Boolean = MongoUtility.insertAdvert(expectedAdvert1)
+    val actualMessage2: Boolean = MongoUtility.insertAdvert(expectedAdvert2)
+    val expectedMessage1: Boolean = true
+    val expectedMessage2: Boolean = false
 
     assertEquals(expectedMessage1, actualMessage1)
     assertEquals(expectedMessage2, actualMessage2)
 
-    val actualAdvert: BsonDocument = MongoUtility.getAdvertById("10")
+    val actualAdvert: BsonDocument = MongoUtility.getAdvertById("-1")
 
     assertEquals(expectedAdvert1, actualAdvert)
+
+    MongoUtility.removeAdvert("-1")
   }
 
   @Test

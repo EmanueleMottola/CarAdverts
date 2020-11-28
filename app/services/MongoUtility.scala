@@ -89,10 +89,19 @@ object MongoUtility {
     Await.result(coll.findOneAndReplace(Filters.equal("_id", document("id")), document).toFuture(), 2.minutes)
   }
 
-  def removeAdvert(id: String): Unit = {
-    //println(id)
-    Await.result(coll.deleteOne({Filters.equal("_id", id)}).toFuture(), 2.minutes)
-
+  /**
+   * Removes an advert given the id.
+   * @param id String, the id of the advert.
+   * @return Boolean, true if success, false otherwise.
+   */
+  def removeAdvert(id: String): Boolean = {
+    try {
+      Await.result(coll.deleteOne({Filters.equal("_id", id)}).toFuture(), 2.minutes)
+      true
+    }
+    catch {
+      case ex: Exception => ex.printStackTrace(); false
+    }
   }
 
 
