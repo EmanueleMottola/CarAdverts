@@ -1,9 +1,35 @@
 package services
 
-import org.junit.Assert.assertTrue
+import org.junit.Assert.{assertEquals, assertTrue}
 import org.junit.Test
+import org.mongodb.scala.bson.{BsonBoolean, BsonDocument, BsonInt32, BsonString}
 
 class MongoUtilityTest {
+
+  @Test
+  def getAdvertByIDTest(): Unit = {
+
+    val id1: String = "0"
+    val id2: String = "-1"
+
+    val actualAdvert1: BsonDocument = MongoUtility.getAdvertById(id1)
+    val actualAdvert2: BsonDocument = MongoUtility.getAdvertById(id2)
+
+    val expectedAdvert1: BsonDocument = BsonDocument(
+      "_id" -> BsonString("0"),
+      "title" -> BsonString("Audi A5"),
+      "fuel" -> BsonString("gasoline"),
+      "price" -> BsonInt32(21500),
+      "isNew" -> BsonBoolean(false),
+      "mileage" -> BsonInt32(57000),
+      "firstRegistration" -> BsonString("2019-12-20T00:00:00Z")
+    )
+    val expectedAdvert2: BsonDocument = BsonDocument()
+
+    assertEquals(expectedAdvert1, actualAdvert1)
+    assertEquals(expectedAdvert2, actualAdvert2)
+
+  }
 
   @Test
   def getEntireCollectionSortedTest(): Unit = {

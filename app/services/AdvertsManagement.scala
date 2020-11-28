@@ -12,7 +12,7 @@ object AdvertsManagement{
    * @param field the field according which to order the list.
    * @return a List of Car ordered according to field.
    */
-  def getListOfAdverts(field: String): Seq[BsonDocument] = {
+  def getAdverts(field: String): Seq[BsonDocument] = {
 
     val response = field match {
       case "id" => mongoutility.getEntireCollectionSorted("_id")
@@ -28,12 +28,12 @@ object AdvertsManagement{
     response
   }
 
-  /*def getAdvertByID(id: String): Car = {
-    mongoutility.readAdvert(id)
+  def getAdvertByID(id: String): BsonDocument = {
+    mongoutility.getAdvertById(id)
   }
 
 
-
+/*
   def updateAdvertByID(json: JsValue): Unit = {
 
     val car: Car = Car.jsValueToCar(json)

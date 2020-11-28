@@ -1,12 +1,9 @@
 package services
 
-import java.util.NoSuchElementException
-
 import org.mongodb.scala._
 import org.mongodb.scala.bson.BsonDocument
 import org.mongodb.scala.model.Filters
 import org.mongodb.scala.model.Sorts.ascending
-import play.api.libs.json.Json
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
@@ -55,16 +52,15 @@ object MongoUtility {
     seq
   }
 
-  def readAdvert(id: String): Car = {
-    try{
-      val ris = Await.result(coll.find[Document]({Filters.equal("_id", id)}).first().toFuture(), 2.minutes)
-      val car: Car = Car.jsValueToCar(Json.parse(ris.toJson()))
-      car
-    }
-    catch {
-      case ex: NullPointerException =>
-        throw new NoSuchElementException
-    }
+  def getAdvertById(id: String): BsonDocument = {
+
+    val ris = Await.result(coll.find[Document]({Filters.equal("_id", id)}).first().toFuture(), 2.minutes)
+
+    if (ris == null)
+      BsonDocument()
+    else
+      ris.toBsonDocument
+
   }
 
   def insertAdvert(doc: Document): Unit = {
