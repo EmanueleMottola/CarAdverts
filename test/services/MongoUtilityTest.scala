@@ -1,10 +1,67 @@
 package services
 
-import org.junit.Assert.{assertEquals, assertTrue}
+import org.junit.Assert.{assertEquals, assertFalse, assertTrue}
 import org.junit.Test
 import org.mongodb.scala.bson.{BsonBoolean, BsonDocument, BsonInt32, BsonString}
 
 class MongoUtilityTest {
+
+  @Test
+  def modifyAdvertTest(): Unit = {
+
+    val expectedAdvert: BsonDocument = BsonDocument(
+      "_id" -> BsonString("-1"),
+      "title" -> BsonString("Audi A5"),
+      "fuel" -> BsonString("gasoline"),
+      "price" -> BsonInt32(21500),
+      "isNew" -> BsonBoolean(false),
+      "mileage" -> BsonInt32(57000),
+      "firstRegistration" -> BsonString("2019-12-20T00:00:00Z")
+    )
+
+    MongoUtility.insertAdvert(expectedAdvert)
+
+    val actualAdvert = MongoUtility.getAdvertById("-1")
+
+    assertEquals("Insertion function broken, or getAdvertByID broken",
+      expectedAdvert, actualAdvert)
+
+
+    val expectedAdvertModified: BsonDocument = BsonDocument(
+      "_id" -> BsonString("-1"),
+      "title" -> BsonString("Audi A5"),
+      "fuel" -> BsonString("diesel"),
+      "price" -> BsonInt32(21500),
+      "isNew" -> BsonBoolean(false),
+      "mileage" -> BsonInt32(57000),
+      "firstRegistration" -> BsonString("2019-12-20T00:00:00Z")
+    )
+    val expectedAdvertModifiedInesistent: BsonDocument = BsonDocument(
+      "_id" -> BsonString("-2"),
+      "title" -> BsonString("Audi A5"),
+      "fuel" -> BsonString("diesel"),
+      "price" -> BsonInt32(21500),
+      "isNew" -> BsonBoolean(false),
+      "mileage" -> BsonInt32(57000),
+      "firstRegistration" -> BsonString("2019-12-20T00:00:00Z")
+    )
+
+    val idPresent: Boolean = MongoUtility.modifyAdvert(expectedAdvertModified)
+    val idNotPresent: Boolean = MongoUtility.modifyAdvert(expectedAdvertModifiedInesistent)
+
+    assertTrue("Failed because advert is not there even if expected",idPresent)
+    assertFalse("Failed because advert is there even if unexpected",idNotPresent)
+
+    val actualAdvertModified = MongoUtility.getAdvertById("-1")
+    val actualAdvertModifiedInesistent = MongoUtility.getAdvertById("-2")
+
+    assertEquals("Advert modified is not equal to the one expected.", expectedAdvertModified, actualAdvertModified)
+    assertEquals("Test for modification of an inesistent document failed.", BsonDocument(), actualAdvertModifiedInesistent)
+
+    MongoUtility.removeAdvert("-1")
+
+  }
+
 
   @Test
   def removeAdvertTest(): Unit = {

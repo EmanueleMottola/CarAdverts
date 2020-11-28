@@ -30,6 +30,7 @@ object MongoUtility {
     database
   }
 
+
   /**
    * Retrieves pointer to the required collection
    * @param database MongoDatabase, returned by connect()
@@ -39,6 +40,7 @@ object MongoUtility {
     val coll = database.getCollection("adverts")
     coll
   }
+
 
   /**
    * Query the database, retrieves all the car adverts.
@@ -52,6 +54,7 @@ object MongoUtility {
     val seq: Seq[BsonDocument] = res.map(x => x.toBsonDocument)
     seq
   }
+
 
   /**
    * Query the database, retrieves advert using the id.
@@ -70,6 +73,7 @@ object MongoUtility {
 
   }
 
+
   /**
    * Inserts an advert in the database
    * @param doc BsonDocument describing the advert.
@@ -85,9 +89,23 @@ object MongoUtility {
     }
   }
 
-  def modifyAdvert(document: Document): Unit = {
-    Await.result(coll.findOneAndReplace(Filters.equal("_id", document("id")), document).toFuture(), 2.minutes)
+
+  /**
+   * Modifies a BsonDocument given the id
+   * @param document BsonDocument, the new update
+   * @return true if document is there and correctly updated, false otherwise
+   */
+  def modifyAdvert(document: BsonDocument): Boolean = {
+
+    val res = Await.result(coll.findOneAndReplace(Filters.equal("_id", document("_id")), document).toFuture(), 2.minutes)
+
+    res match {
+      case null => false
+      case _ => true
+    }
+
   }
+
 
   /**
    * Removes an advert given the id.
